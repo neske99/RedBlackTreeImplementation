@@ -1,0 +1,27 @@
+digraph{
+0[label="B2",color=black,style=filled,fontcolor=white];
+0 -> 1;
+0 -> 2;
+1[label="B1",color=black,style=filled,fontcolor=white];
+1 -> 3;
+1 -> 4;
+3[label="NULL",color=black,style=filled,fontcolor=white];
+4[label="NULL",color=black,style=filled,fontcolor=white];
+2[label="R4",color=red,style=filled,fontcolor=white];
+2 -> 5;
+2 -> 6;
+5[label="B3",color=black,style=filled,fontcolor=white];
+5 -> 11;
+5 -> 12;
+11[label="NULL",color=black,style=filled,fontcolor=white];
+12[label="NULL",color=black,style=filled,fontcolor=white];
+6[label="B5",color=black,style=filled,fontcolor=white];
+6 -> 13;
+6 -> 14;
+13[label="NULL",color=black,style=filled,fontcolor=white];
+14[label="R6",color=red,style=filled,fontcolor=white];
+14 -> 29;
+14 -> 30;
+29[label="NULL",color=black,style=filled,fontcolor=white];
+30[label="NULL",color=black,style=filled,fontcolor=white];
+}
