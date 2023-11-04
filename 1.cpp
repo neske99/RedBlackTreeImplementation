@@ -142,7 +142,8 @@ public:
         }    
 
     }
-    void erase(){
+    void erase(T toErase){
+        if(find(toErase)) root=eraseHelper(root,toErase);
         cerr<<"erase not implemented yet"<<endl;
     }
 
@@ -230,8 +231,71 @@ public:
             exportNode(f,curr->right,rightIndex);
         //}
     }
+void test(){
+    auto tmp=takeLeftmost(root->right);
+    cerr<<tmp.first->key.value()<<endl;
+}
 private:
+Node<T>* eraseHelper(Node<T>* curr,T toErase){
+    if(curr->key.value()==toErase){
+        if(!curr->left->key && !curr->right->key){//has no children
+            delete curr->left;
+            delete curr->right;
+            delete curr;
+            return new Node<T>();
+        }else if(!curr->left->key){//has only right child
+            auto left=curr->left;
+            auto right=curr->right;
+            delete left;
+            delete curr;
+            return right;
+        }else if(!curr->right->key){//has only left child
+            auto left=curr->left;
+            auto right=curr->right;
+            delete right;
+            delete curr;
+            return left;
 
+        }else{// has both children
+            Node<T>*levi=curr->left;
+            auto tmp=takeLeftmost(curr->right);            
+            Node<T>*leftMost=tmp.first;
+            cerr<<tmp.first->key.value()<<endl;
+            cerr<<levi->key.value()<<endl;
+            leftMost->left=levi;
+            //leftMost->right=tmp.second;
+            
+            return leftMost;
+            return curr;
+            
+        }
+
+        
+    };//radi nesto
+
+    if(toErase<curr->key.value()){ 
+        curr->left= eraseHelper(curr->left,toErase);
+        return curr;
+    }
+    else{
+        curr->right=eraseHelper(curr->right,toErase);
+        return curr;
+    }
+}
+
+pair<Node<T>*,Node<T>*>takeLeftmost(Node<T>*curr){
+    if(!curr->left->key){
+        delete curr->left;
+        //delete curr->right;
+        return {curr,new Node<T>()};
+    }
+    pair<Node<T>*,Node<T>*> tmp=takeLeftmost(curr->left);
+    curr->left=tmp.second;
+    return {tmp.first,curr};
+
+
+
+}
 pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     if(!curr->key){
         curr->key={toInsert};
@@ -297,7 +361,9 @@ int main()
     skup.insert(5);
     skup.insert(6);
 
-   skup.bfsPrint();
+    skup.erase(5);
+//    skup.test();
+    skup.bfsPrint();
     skup.exportToFile();
 
    return 0;
