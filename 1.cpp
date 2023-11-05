@@ -15,14 +15,18 @@ public:
     Node<T>*left;
     Node<T>*right;
     optional<T>key;
-    int balance;
     Color color;
     
+    Node(T key,Color col){
+        this->left=nullptr;
+        this->right=nullptr;
+        this->key={key};
+        this->color=col;
+    }
     Node(T key){
         this->left=nullptr;
         this->right=nullptr;
         this->key={key};
-        this->balance=0;
         this->color=red;
         
     }
@@ -32,10 +36,10 @@ public:
         this->left=nullptr;
         this->right=nullptr;
         this->key={};
-        this->balance=0;
         this->color=black;
         
     }
+    
 
     
     bool find(T toFind){
@@ -47,6 +51,38 @@ public:
         else                   return right->find(toFind);
     
     }
+    bool operator==(const Node<T>& other){
+        
+        if(!this->key && !other.key)
+            return true;
+        if(!this->key )
+            return false;
+        if(!other.key)
+            return false;
+        if(this->key.value() ==other.key.value() && this->color==other.color)
+            return  ((*(this->left)) ==(*(other.left))) && (*(this->right))==(*(other.right));
+        return false;
+
+    }
+    pair<bool,int> isRBTree(Node<T>*curr){
+        if(!curr->key){
+            return {true,1};
+        }
+        auto levi=isRBTree(curr->left);
+        auto desni=isRBTree(curr->right);
+        if(levi.first && desni.first && levi.second==desni.second){
+            if(curr->color==red)
+                return {true,desni.second};
+            else if(curr->color==black)
+                return {true,desni.second+1};
+            return {false,0};
+        }
+        return {false,0};
+    }
+    bool isRBTree(){
+        return isRBTree(this).first;
+    }
+    
 };
 
 template<typename T>
@@ -132,6 +168,17 @@ public:
         root=new Node<T>();
         root->color=black;
     }
+    BRTree(Node<T>*root){
+        this->root=root;
+    }
+    BRTree(const vector<T>&vec){
+        this->root=new Node<T>();
+        int n=vec.size();
+        for(int i =0;i<n;i++)
+            this->insert(vec[i]);
+    }
+
+
     bool find(T toFind){
         return root->find(toFind);
     }
@@ -142,8 +189,15 @@ public:
         }    
 
     }
+    bool operator==(const BRTree&other){
+        return (*root)==(*other.root);
+
+    }
     void erase(T toErase){
         if(find(toErase)) root=eraseHelper(root,toErase);
+        if(root->color==doubleBlack && !root->right->key && root->left->key){
+            root->left->color=red;
+        }
         root->color=black;
         cerr<<"erase not implemented yet"<<endl;
     }
@@ -240,7 +294,9 @@ void test(){
     cerr<<"this should be 5:"<<tmp.first->key.value()<<endl;
     //cerr<<"this should be 5 : "<<tmp.second->key.value()<<endl;
 }
-
+bool isRBTree(){
+    return root->isRBTree();
+}
 private:
 Node<T>* eraseHelper(Node<T>* curr,T toErase){
     if(curr->key.value()==toErase){
@@ -285,9 +341,29 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
             leftMost->left=levi;
             leftMost->right=new_right;
 
-            if(curr->color==red && leftMost->color==red)     leftMost->color=red;
-            if(curr->color==black && leftMost->color==black) leftMost->color=doubleBlack; 
-            else                                             leftMost->color=black;
+            if(curr->color==red && leftMost->color==red)          leftMost->color=red;
+            else if(curr->color==black && leftMost->color==black){
+                if(curr->left->color==black){
+                    curr->left->color=red;
+                    leftMost->color=doubleBlack;
+                }else{
+                    Node<T>*sibling=leftMost->left;
+
+
+                    leftMost->left=sibling->right;
+                    sibling->right=leftMost;
+
+                    leftMost=sibling;
+                    leftMost->color=black;
+                
+                    leftMost->right->right->color=black;
+                    leftMost->right->left->color=red;
+
+
+                }
+             
+                
+            }else                                                  leftMost->color=black;
 
             delete curr;
             return leftMost;
@@ -300,10 +376,105 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
 
     if(toErase<curr->key.value()){ 
         curr->left= eraseHelper(curr->left,toErase);
+        if(curr->left->color==doubleBlack){
+            Node<T>*sibling=curr->right;
+            if(sibling->color==black && sibling->right->color==red){
+                curr->right=sibling->left;
+                sibling->left=curr;
+
+                curr=sibling;
+
+                curr->left->left->color=black;
+                if(curr->left->color==black){
+                    curr->right->color=black;
+                }else{//curr->left->color==red
+                    curr->left->color=black;
+                    curr->right->color=black;
+                    curr->color=red;
+
+                }
+                
+            }else if(sibling->color==black && sibling->left->color==red){
+                Node<T>*r=sibling->left;
+                curr->right=r->left;
+                r->left=curr;
+
+                sibling->left=r->right;
+                r->right=sibling;
+
+                curr=r;
+                curr->color=black;
+                curr->left->left->color=black;
+            }else if(sibling->color==red){
+                curr->right=sibling->left;
+                sibling->left=curr;
+                curr=sibling;
+                curr->color=black;
+                curr->left->left->color=black;
+                curr->left->right->color=red;
+
+
+            }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
+                sibling->color=red;
+                curr->left->color=black;
+                if(curr->color==black) curr->color=doubleBlack;
+                else                   curr->color=black;
+            }
+
+
+
+        }
         return curr;
     }
     else{
         curr->right=eraseHelper(curr->right,toErase);
+        if(curr->right->color==doubleBlack){
+            Node<T>*sibling=curr->left;
+            if(sibling->color==black && sibling->left->color==red){
+                curr->left=sibling->right;
+                sibling->right=curr;
+
+                curr=sibling;
+
+                curr->right->right->color=black;
+                if(curr->right->color==black){
+                    curr->left->color=black;
+                }else{//curr->right->color==red
+                    curr->right->color=black;
+                    curr->left->color=black;
+                    curr->color=red;
+
+                }
+
+            }else if(sibling->color==black && sibling->right->color==red){
+                 Node<T>*r=sibling->right;
+                curr->left=r->right;
+                r->right=curr;
+
+                sibling->right=r->left;
+                r->left=sibling;
+
+                curr=r;
+                curr->color=black;
+                curr->right->right->color=black;
+            }else if(sibling->color==red){
+                curr->left=sibling->right;
+                sibling->right=curr;
+                curr=sibling;
+                curr->color=black;
+                
+                curr->right->right->color=black;
+                curr->right->left->color=red;
+
+            }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
+                sibling->color=red;
+                curr->right->color=black;
+
+                if(curr->color==black) curr->color=doubleBlack;
+                else                    curr->color=black;
+            }
+
+        }
         return curr;
     }
 }
@@ -375,10 +546,17 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
 };
 
 
-
+void test(int toDelete){
+    vector<int>vektor={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    BRTree<int> skup=BRTree<int>(vektor);
+    
+    skup.erase(toDelete);
+    cerr<<"Delete try " <<toDelete<<" :"<<skup.isRBTree()<<endl;
+    skup.exportToFile("graph"+to_string(toDelete));    
+}
 int main()
 {
-    BRTree<int> skup;
+    /*BRTree<int> skup();
     skup.insert(1);
     skup.insert(2);
     skup.insert(3);
@@ -388,10 +566,12 @@ int main()
     //skup.insert(0);
     //skup.insert(-1);
 
-    skup.erase(2);
+    skup.erase(3);
     //skup.test();
     skup.bfsPrint();
     skup.exportToFile();
-
+*/
+   for(int i=0;i<15;i++)
+        test(i+1);
    return 0;
 }
