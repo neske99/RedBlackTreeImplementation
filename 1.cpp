@@ -82,6 +82,23 @@ public:
     bool isRBTree(){
         return isRBTree(this).first;
     }
+    void leftRotate(){
+        Node<T>*z=this;
+        Node<T>*y=z->right;
+        Node<T>*x=y->right;
+        z->right=y->left;
+        y->left=z;
+        this=y;
+    }
+    void rightRotate(){
+        Node<T>*z=this;
+        Node<T>*y=z->left;
+        Node<T>*x=y->left;
+        z->left=y->right;
+        y->right=z;
+        this=y;
+
+    }
     
 };
 
@@ -149,17 +166,9 @@ public:
                 newFam.status=gotovo;
                 return newFam;
             }
-
-
-
         }
-
-
-
     }
-
 };
-
 
 template<typename T>
 class BRTree{
@@ -237,8 +246,6 @@ public:
         
         exportNode(f,root,i);
 
-
-
         f<< "}\n";
         f.close();
     }
@@ -248,8 +255,6 @@ public:
             
             if(curr->color==doubleBlack) col="green";
             f << index<<"[label=\""<<"NULL"<<"\","<<"color="<< col << ",style=filled,fontcolor=white];\n";
-        //f<<index<<" -> "<<leftIndex<<";\n";
-        //f<<index<<" -> "<<rightIndex<<";\n";
             return;
         }
         string nodeName="";
@@ -488,9 +493,6 @@ pair<Node<T>*,Node<T>*>takeLeftmost(Node<T>*curr){
     pair<Node<T>*,Node<T>*> tmp=takeLeftmost(curr->left);
     curr->left=tmp.second;
     return {tmp.first,curr};
-
-
-
 }
 pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     if(!curr->key){
@@ -516,7 +518,6 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
             curr->right=tmp.second;
         }
 
-
         if(fam.status==gotovo)
             return {fam,curr};
         else if(fam.status==otac){//dete je otac
@@ -536,8 +537,6 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
             }
             return {fam,curr};
         }
-
-
     }
 
 }
@@ -556,22 +555,8 @@ void test(int toDelete){
 }
 int main()
 {
-    /*BRTree<int> skup();
-    skup.insert(1);
-    skup.insert(2);
-    skup.insert(3);
-    skup.insert(4);
-    skup.insert(5);
-    skup.insert(6);
-    //skup.insert(0);
-    //skup.insert(-1);
-
-    skup.erase(3);
-    //skup.test();
-    skup.bfsPrint();
-    skup.exportToFile();
-*/
    for(int i=0;i<15;i++)
         test(i+1);
+
    return 0;
 }
