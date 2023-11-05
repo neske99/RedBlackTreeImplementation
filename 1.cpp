@@ -6,7 +6,7 @@
 #include<fstream>
 using namespace std;
 
-enum Color{red,black};
+enum Color{red,black,doubleBlack};
 enum Status{on=0,otac=1,deda=2,gotovo=3};
 
 template<typename T>
@@ -144,6 +144,7 @@ public:
     }
     void erase(T toErase){
         if(find(toErase)) root=eraseHelper(root,toErase);
+        root->color=black;
         cerr<<"erase not implemented yet"<<endl;
     }
 
@@ -156,9 +157,9 @@ public:
                 Node<T>*curr=redd.front();
                 redd.pop();
                 string toPrint="";
-                if(curr->color==red) toPrint+="R";
-                else                 toPrint+="B";
-
+                if(curr->color==red)        toPrint+="R";
+                else if(curr->color==black) toPrint+="B";
+                else                        toPrint+="DB";
                 if(curr->key){
                     toPrint+=to_string(curr->key.value());
                     redd.push(curr->left);
@@ -189,7 +190,10 @@ public:
     }
     void exportNode(ostream& f,Node<T>*curr,int index){
         if(!curr->key){
-            f << index<<"[label=\""<<"NULL"<<"\","<<"color="<< "black" << ",style=filled,fontcolor=white];\n";
+            string col="black";
+            
+            if(curr->color==doubleBlack) col="green";
+            f << index<<"[label=\""<<"NULL"<<"\","<<"color="<< col << ",style=filled,fontcolor=white];\n";
         //f<<index<<" -> "<<leftIndex<<";\n";
         //f<<index<<" -> "<<rightIndex<<";\n";
             return;
@@ -197,18 +201,17 @@ public:
         string nodeName="";
         string lName="";
         string rName="";
-        if(curr->color==black) nodeName+="B";
-        else                   nodeName+="R";
+
+        
         if(curr->key) nodeName+=to_string(curr->key.value());
         else          nodeName+="NULL";
 
-        if(curr->left->color==black) lName+="B";
-        else                   lName+="R";
+        
+        
         if(curr->left->key) lName+=to_string(curr->left->key.value());
         else          lName+="NULL";
 
-        if(curr->right->color==black) rName+="B";
-        else                   rName+="R";
+        
         if(curr->right->key) rName+=to_string(curr->right->key.value());
         else          rName+="NULL";
 
@@ -217,8 +220,9 @@ public:
         
          
         string col="";
-        if(curr->color==black) col="black";
-        else                    col="red";
+        if(curr->color==black)    col="black";
+        else if(curr->color==red) col="red";
+        else                      col="green";
 
         f << index<<"[label=\""+nodeName+"\","<<"color="<<col << ",style=filled,fontcolor=white];\n";
         f<<index<<" -> "<<leftIndex<<";\n";
@@ -232,26 +236,42 @@ public:
         //}
     }
 void test(){
-    auto tmp=takeLeftmost(root->right);
-    cerr<<tmp.first->key.value()<<endl;
+    auto tmp=takeLeftmost(root->right->right);
+    cerr<<"this should be 5:"<<tmp.first->key.value()<<endl;
+    //cerr<<"this should be 5 : "<<tmp.second->key.value()<<endl;
 }
+
 private:
 Node<T>* eraseHelper(Node<T>* curr,T toErase){
     if(curr->key.value()==toErase){
         if(!curr->left->key && !curr->right->key){//has no children
+            Node<T>*toReturn=new Node<T>();
+
+            if(curr->color==red) ;//do nothing
+            else                 toReturn->color=doubleBlack;//do something TODO 
+        
             delete curr->left;
             delete curr->right;
             delete curr;
-            return new Node<T>();
+            return toReturn;
         }else if(!curr->left->key){//has only right child
             auto left=curr->left;
             auto right=curr->right;
+            
+            //if(curr->color==red && right->color==red) ;cant happen
+            if(curr->color==red || right->color==red) right->color=black;
+            else                                      right->color=doubleBlack;
+
             delete left;
             delete curr;
             return right;
         }else if(!curr->right->key){//has only left child
             auto left=curr->left;
             auto right=curr->right;
+
+            if(curr->color==red || left->color==red ) left->color=black; 
+            else                                      left->color=doubleBlack;
+
             delete right;
             delete curr;
             return left;
@@ -260,11 +280,16 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
             Node<T>*levi=curr->left;
             auto tmp=takeLeftmost(curr->right);            
             Node<T>*leftMost=tmp.first;
-            cerr<<tmp.first->key.value()<<endl;
-            cerr<<levi->key.value()<<endl;
-            leftMost->left=levi;
-            //leftMost->right=tmp.second;
+            Node<T>*new_right=tmp.second;
             
+            leftMost->left=levi;
+            leftMost->right=new_right;
+
+            if(curr->color==red && leftMost->color==red)     leftMost->color=red;
+            if(curr->color==black && leftMost->color==black) leftMost->color=doubleBlack; 
+            else                                             leftMost->color=black;
+
+            delete curr;
             return leftMost;
             return curr;
             
@@ -287,7 +312,7 @@ pair<Node<T>*,Node<T>*>takeLeftmost(Node<T>*curr){
     if(!curr->left->key){
         delete curr->left;
         //delete curr->right;
-        return {curr,new Node<T>()};
+        return {curr,curr->right};
     }
     pair<Node<T>*,Node<T>*> tmp=takeLeftmost(curr->left);
     curr->left=tmp.second;
@@ -360,9 +385,11 @@ int main()
     skup.insert(4);
     skup.insert(5);
     skup.insert(6);
+    //skup.insert(0);
+    //skup.insert(-1);
 
-    skup.erase(5);
-//    skup.test();
+    skup.erase(2);
+    //skup.test();
     skup.bfsPrint();
     skup.exportToFile();
 
