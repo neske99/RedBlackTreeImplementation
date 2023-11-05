@@ -17,31 +17,16 @@ public:
     optional<T>key;
     Color color;
     
-    Node(T key,Color col){
-        this->left=nullptr;
-        this->right=nullptr;
+    Node(T key,Color col):left(nullptr),right(nullptr),color(col){
         this->key={key};
-        this->color=col;
     }
-    Node(T key){
-        this->left=nullptr;
-        this->right=nullptr;
-        this->key={key};
-        this->color=red;
-        
-    }
+    Node(T key):Node(key,red){}
     
-    Node()
+    Node():left(nullptr),right(nullptr),color(black)
     {
-        this->left=nullptr;
-        this->right=nullptr;
         this->key={};
-        this->color=black;
-        
     }
-    
 
-    
     bool find(T toFind){
         if(!this->key) return false;
         T curr=key.value();
@@ -62,7 +47,6 @@ public:
         if(this->key.value() ==other.key.value() && this->color==other.color)
             return  ((*(this->left)) ==(*(other.left))) && (*(this->right))==(*(other.right));
         return false;
-
     }
     pair<bool,int> isRBTree(Node<T>*curr){
         if(!curr->key){
@@ -98,8 +82,7 @@ public:
         y->right=z;
         this=y;
 
-    }
-    
+    } 
 };
 
 template<typename T>
@@ -111,7 +94,6 @@ public:
     Node<T>*him;
     Node<T>*cousin;
     Status status;
-
 
     void findUncleAndCousin(){
         if(grandpa->left==father) uncle=grandpa->right;
@@ -187,7 +169,6 @@ public:
             this->insert(vec[i]);
     }
 
-
     bool find(T toFind){
         return root->find(toFind);
     }
@@ -196,11 +177,9 @@ public:
             root=insertHelper(root,toInsert).second;
             root->color=black;
         }    
-
     }
     bool operator==(const BRTree&other){
         return (*root)==(*other.root);
-
     }
     void erase(T toErase){
         if(find(toErase)) root=eraseHelper(root,toErase);
@@ -234,8 +213,6 @@ public:
             }
             cout<<endl;
         }
-
-
     }
 
     void exportToFile(string filename="graph"){
@@ -261,15 +238,11 @@ public:
         string lName="";
         string rName="";
 
-        
         if(curr->key) nodeName+=to_string(curr->key.value());
-        else          nodeName+="NULL";
-
-        
+        else          nodeName+="NULL";        
         
         if(curr->left->key) lName+=to_string(curr->left->key.value());
         else          lName+="NULL";
-
         
         if(curr->right->key) rName+=to_string(curr->right->key.value());
         else          rName+="NULL";
@@ -277,7 +250,6 @@ public:
         int leftIndex=2*index+1;
         int rightIndex=2*index+2;
         
-         
         string col="";
         if(curr->color==black)    col="black";
         else if(curr->color==red) col="red";
@@ -287,21 +259,16 @@ public:
         f<<index<<" -> "<<leftIndex<<";\n";
         f<<index<<" -> "<<rightIndex<<";\n";
 
-        //if(curr->left->key){
+        
             exportNode(f,curr->left,leftIndex);
-        //}
-        //if(curr->right->key){
+        
+        
             exportNode(f,curr->right,rightIndex);
-        //}
+        }
+
+    bool isRBTree(){
+        return root->isRBTree();
     }
-void test(){
-    auto tmp=takeLeftmost(root->right->right);
-    cerr<<"this should be 5:"<<tmp.first->key.value()<<endl;
-    //cerr<<"this should be 5 : "<<tmp.second->key.value()<<endl;
-}
-bool isRBTree(){
-    return root->isRBTree();
-}
 private:
 Node<T>* eraseHelper(Node<T>* curr,T toErase){
     if(curr->key.value()==toErase){
@@ -363,10 +330,7 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                 
                     leftMost->right->right->color=black;
                     leftMost->right->left->color=red;
-
-
                 }
-             
                 
             }else                                                  leftMost->color=black;
 
@@ -376,8 +340,8 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
             
         }
 
-        
-    };//radi nesto
+       
+    }
 
     if(toErase<curr->key.value()){ 
         curr->left= eraseHelper(curr->left,toErase);
@@ -396,7 +360,6 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                     curr->left->color=black;
                     curr->right->color=black;
                     curr->color=red;
-
                 }
                 
             }else if(sibling->color==black && sibling->left->color==red){
@@ -417,17 +380,12 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                 curr->color=black;
                 curr->left->left->color=black;
                 curr->left->right->color=red;
-
-
             }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
                 sibling->color=red;
                 curr->left->color=black;
                 if(curr->color==black) curr->color=doubleBlack;
                 else                   curr->color=black;
             }
-
-
-
         }
         return curr;
     }
@@ -448,9 +406,7 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                     curr->right->color=black;
                     curr->left->color=black;
                     curr->color=red;
-
                 }
-
             }else if(sibling->color==black && sibling->right->color==red){
                  Node<T>*r=sibling->right;
                 curr->left=r->right;
@@ -470,7 +426,6 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                 
                 curr->right->right->color=black;
                 curr->right->left->color=red;
-
             }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
                 sibling->color=red;
                 curr->right->color=black;
@@ -478,7 +433,6 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
                 if(curr->color==black) curr->color=doubleBlack;
                 else                    curr->color=black;
             }
-
         }
         return curr;
     }
@@ -538,12 +492,9 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
             return {fam,curr};
         }
     }
-
 }
-
     Node<T>*root;
 };
-
 
 void test(int toDelete){
     vector<int>vektor={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
