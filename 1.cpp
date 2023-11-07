@@ -4,6 +4,8 @@
 #include<queue>
 #include<optional>
 #include<fstream>
+#include<algorithm>
+#include<numeric>
 using namespace std;
 
 enum Color{red,black,doubleBlack};
@@ -187,7 +189,7 @@ public:
             root->left->color=red;
         }
         root->color=black;
-        cerr<<"erase not implemented yet"<<endl;
+       
     }
 
     void bfsPrint(){
@@ -496,18 +498,48 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     Node<T>*root;
 };
 
-void test(int toDelete){
-    vector<int>vektor={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-    BRTree<int> skup=BRTree<int>(vektor);
+void test_insert(int dim=100){
+    vector<int>vektor={};
+    for(int i=0;i<dim;i++)
+        vektor.push_back(i+1);
+    BRTree<int> tmp=BRTree<int>();
+    vector<bool>amRBTree;
+
+    for(int i=0;i<vektor.size();i++){
+        tmp.insert(vektor[i]);
+        amRBTree.push_back(tmp.isRBTree());
+        cerr<<"test "<< vektor[i]<<":"<<amRBTree.back()<<endl;
+        //tmp.exportToFile("graph"+to_string(i));
+    }
+    cerr<<"insert_test passed: "<<accumulate(amRBTree.begin(),amRBTree.end(),true,[](bool x,bool y){return x && y;})<<endl;
     
+    
+    
+    return;
+    //BRTree<int> skup=BRTree<int>(vektor);
+    //skup.erase(toDelete);
+    //cerr<<"Delete try " <<toDelete<<" :"<<skup.isRBTree()<<endl;
+    //skup.exportToFile("graph"+to_string(toDelete));    
+}
+void test_erase(int dim,int toDelete){
+    BRTree<int>skup;
+
+    for(int i=0;i<dim;i++)
+        skup.insert(i+1);
+    skup.exportToFile("graph_before_delete");
     skup.erase(toDelete);
-    cerr<<"Delete try " <<toDelete<<" :"<<skup.isRBTree()<<endl;
-    skup.exportToFile("graph"+to_string(toDelete));    
+    skup.exportToFile("skup_after_delete"+to_string(toDelete));
+    cerr<<"to delete : "<<toDelete<< " " << skup.isRBTree()<<endl;
+
+
+
 }
 int main()
-{
-   for(int i=0;i<15;i++)
-        test(i+1);
+{   
+    for(int i=0;i<32;i++)
+        test_erase(16,i+1);
+    //for(int i=0;i<15;i++)
+    //   test(i+1);
 
    return 0;
 }
