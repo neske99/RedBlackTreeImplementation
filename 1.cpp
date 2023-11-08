@@ -189,10 +189,18 @@ public:
                 grandpa->left=him;
                 father->right=him->left;
                 him->left=father;
+
+                father=grandpa->left;
+                him=grandpa->left->left;
+                cousin=father->right;
             }else if(grandpa->right==father && father->left==him){
                 grandpa->right=him;
                 father->left =him->right;
                 him->right= father;
+
+                father=grandpa->right;
+                him=grandpa->right->right;
+                cousin=father->left;
             }
             //line case
             if(grandpa->right==father && father->right==him){
@@ -562,6 +570,12 @@ int main()
     string s;
     BRTree<int>skup=BRTree<int>();
     skup.exportToFile("GraphInitial");
+    skup.insert(2);
+    skup.insert(5);
+    skup.insert(3);
+    skup.exportToFile("253");
+
+    return 0;
     while(true){
         cout<<"action "<< i+1<<":";
         cout.flush();
