@@ -8,7 +8,7 @@
 #include<numeric>
 #include<functional>
 #include<random>
-
+#include <bits/stdc++.h>
 using namespace std;
 
 enum Color{red,black,doubleBlack};
@@ -262,21 +262,16 @@ public:
         return root->find(toFind);
     }
     void insert(T toInsert){
-        if(!root->find(toInsert)){
-            size++;
-            root=insertHelper(root,toInsert).second;
-            root->color=black;
-        }    
+        size++;
+        root=insertHelper(root,toInsert).second;
+        root->color=black;
     }
     bool operator==(const BRTree&other)const{
         return (*root)==(*other.root);
     }
     void erase(T toErase){
-        if(find(toErase)){
-            root=eraseHelper(root,toErase);
-            
-            --size;
-        }
+        root=eraseHelper(root,toErase);
+        --size;
         root->color=black;
        
     }
@@ -316,6 +311,10 @@ public:
     }
 private:
 Node<T>* eraseHelper(Node<T>* curr,T toErase){
+    if(!curr->key){
+        size++;
+        return curr;
+    }
     if(curr->key.value()==toErase){
         if(!curr->left->key && !curr->right->key){//has no children
             Node<T>*toReturn=new Node<T>();
@@ -485,6 +484,12 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
         Family<T> fam;
         
         T key=curr->key.value();
+        if(key==toInsert){
+            Family<T>f;
+            f.status=gotovo;
+            --size;
+            return {f,curr};
+        }
         if(toInsert<key){
             auto tmp=insertHelper(curr->left,toInsert);
             fam=tmp.first;
@@ -520,26 +525,7 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     int size;
 };
 
-void test_insert(const vector<int>&vektori){
-    vector<int>vektor={};
 
-    BRTree<int> tmp=BRTree<int>();
-    vector<bool>amRBTree;
-
-    int n=vektor.size();
-    for(int i=0;i<n;i++){
-        tmp.insert(vektor[i]);
-        amRBTree.push_back(tmp.isRBTree());
-        //cerr<<"test "<< vektor[i]<<":"<<amRBTree.back()<<endl;
-        //tmp.exportToFile("graph"+to_string(i));
-    }
-    if(!accumulate(amRBTree.begin(),amRBTree.end(),true,[](bool x,bool y){return x && y;}))
-        cerr<<"Some test failed"<<endl;
-    
-    
-    
-    return;
-}
 bool test_erase(const vector<int>&vektor,int toDelete){
     BRTree<int>skup;
 
@@ -574,29 +560,42 @@ void multiple_erase_test(int dim){
     }
        cout<<"ALL DELETION TESTS PASSED=="<<accumulate(tests.begin(),tests.end(),true,[](bool x,bool y){return x && y;})<<endl;
 }
+void test_insert(const vector<int>&vektor){
+    BRTree<int>skup;
+    int n=vektor.size();
+    for(int i=0;i<n;i++){
+        skup.insert(vektor[i]);
+    }
+}
+void test(){
+    vector<int>vektor;
+    for(int i=0;i<10000000;i++){
+        vektor.push_back(i);
+    }
+    auto rng=default_random_engine {};
+    shuffle(vektor.begin(),vektor.end(),rng);
+    test_insert(vektor);
+}
 int main()
 {
-    int dim=1000;
-    vector<int>vektori={};
-    for(int i=0;i<dim;i++)
-        vektori.push_back(i+1);
-    auto rng=default_random_engine {};
+    time_t start, end;
 
-    multiple_erase_test(dim);
+    /* You can call it like this : start = time(NULL);
+    in both the way start contain total time in seconds
+    since the Epoch. */
+    time(&start);
 
+    // unsync the I/O of C and C++.
+    //ios_base::sync_with_stdio(false);
+
+    test();
+    // Recording end time.
+    time(&end);
+
+    // Calculating total time taken by the program.
+    double time_taken = double(end - start);
+    cout << "Time taken by program is : " << fixed
+         << time_taken << setprecision(5);
+    cout << " sec " << endl;
     return 0;
-
-
-/*
-    vector<int>vektori={6,20,16,15,7,18,1,2,14,3,21,8,4,10,12,17,19,11,9,13,5 };
-    BRTree<int>skup=BRTree<int>(vektori);
-    skup.exportToFile("before");
-    skup.erase(15);
-    skup.exportToFile("after");
-*/
-
-
-
-
-   return 0;
 }
