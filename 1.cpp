@@ -68,23 +68,75 @@ public:
     bool isRBTree(){
         return isRBTree(this).first;
     }
-    void leftRotate(){
+    Node<T>* leftRotate(){
         Node<T>*z=this;
         Node<T>*y=z->right;
-        Node<T>*x=y->right;
+        //Node<T>*x=y->right;
         z->right=y->left;
         y->left=z;
-        this=y;
+        return y;
     }
-    void rightRotate(){
+    Node<T>* rightRotate(){
         Node<T>*z=this;
         Node<T>*y=z->left;
-        Node<T>*x=y->left;
+        //Node<T>*x=y->left;
         z->left=y->right;
         y->right=z;
-        this=y;
+        return y;
 
     } 
+    void exportNode(ostream& f,Node<T>*curr,int index){
+        if(!curr->key){
+            string col="black";
+            
+            if(curr->color==doubleBlack) col="green";
+            f << index<<"[label=\""<<"NULL"<<"\","<<"color="<< col << ",style=filled,fontcolor=white];\n";
+            return;
+        }
+        string nodeName="";
+        string lName="";
+        string rName="";
+
+        if(curr->key) nodeName+=to_string(curr->key.value());
+        else          nodeName+="NULL";        
+        
+        if(curr->left->key) lName+=to_string(curr->left->key.value());
+        else          lName+="NULL";
+        
+        if(curr->right->key) rName+=to_string(curr->right->key.value());
+        else          rName+="NULL";
+
+        int leftIndex=2*index+1;
+        int rightIndex=2*index+2;
+        
+        string col="";
+        if(curr->color==black)    col="black";
+        else if(curr->color==red) col="red";
+        else                      col="green";
+
+        f << index<<"[label=\""+nodeName+"\","<<"color="<<col << ",style=filled,fontcolor=white];\n";
+        f<<index<<" -> "<<leftIndex<<";\n";
+        f<<index<<" -> "<<rightIndex<<";\n";
+
+        
+        exportNode(f,curr->left,leftIndex);
+        
+        
+        exportNode(f,curr->right,rightIndex);
+    }
+
+    void exportToFile(string filename="graph"){
+        ofstream f;
+        int i=0;
+        f.open(filename+".dot");
+        f << "digraph{\n"; 
+        
+        exportNode(f,this,i);
+
+        f<< "}\n";
+        f.close();
+    }
+
 };
 
 template<typename T>
@@ -185,9 +237,7 @@ public:
     }
     void erase(T toErase){
         if(find(toErase)) root=eraseHelper(root,toErase);
-        if(root->color==doubleBlack && !root->right->key && root->left->key){
-            root->left->color=red;
-        }
+       
         root->color=black;
        
     }
@@ -218,55 +268,9 @@ public:
     }
 
     void exportToFile(string filename="graph"){
-        ofstream f;
-        int i=0;
-        f.open(filename+".dot");
-        f << "digraph{\n"; 
-        
-        exportNode(f,root,i);
-
-        f<< "}\n";
-        f.close();
+        root->exportToFile(filename);
     }
-    void exportNode(ostream& f,Node<T>*curr,int index){
-        if(!curr->key){
-            string col="black";
-            
-            if(curr->color==doubleBlack) col="green";
-            f << index<<"[label=\""<<"NULL"<<"\","<<"color="<< col << ",style=filled,fontcolor=white];\n";
-            return;
-        }
-        string nodeName="";
-        string lName="";
-        string rName="";
-
-        if(curr->key) nodeName+=to_string(curr->key.value());
-        else          nodeName+="NULL";        
-        
-        if(curr->left->key) lName+=to_string(curr->left->key.value());
-        else          lName+="NULL";
-        
-        if(curr->right->key) rName+=to_string(curr->right->key.value());
-        else          rName+="NULL";
-
-        int leftIndex=2*index+1;
-        int rightIndex=2*index+2;
-        
-        string col="";
-        if(curr->color==black)    col="black";
-        else if(curr->color==red) col="red";
-        else                      col="green";
-
-        f << index<<"[label=\""+nodeName+"\","<<"color="<<col << ",style=filled,fontcolor=white];\n";
-        f<<index<<" -> "<<leftIndex<<";\n";
-        f<<index<<" -> "<<rightIndex<<";\n";
-
-        
-            exportNode(f,curr->left,leftIndex);
-        
-        
-            exportNode(f,curr->right,rightIndex);
-        }
+    
 
     bool isRBTree(){
         return root->isRBTree();
@@ -307,38 +311,19 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
             return left;
 
         }else{// has both children
-            Node<T>*levi=curr->left;
-            auto tmp=takeLeftmost(curr->right);            
-            Node<T>*leftMost=tmp.first;
-            Node<T>*new_right=tmp.second;
             
-            leftMost->left=levi;
-            leftMost->right=new_right;
-
-            if(curr->color==red && leftMost->color==red)          leftMost->color=red;
-            else if(curr->color==black && leftMost->color==black){
-                if(curr->left->color==black){
-                    curr->left->color=red;
-                    leftMost->color=doubleBlack;
-                }else{
-                    Node<T>*sibling=leftMost->left;
-
-
-                    leftMost->left=sibling->right;
-                    sibling->right=leftMost;
-
-                    leftMost=sibling;
-                    leftMost->color=black;
-                
-                    leftMost->right->right->color=black;
-                    leftMost->right->left->color=red;
-                }
-                
-            }else                                                  leftMost->color=black;
-
-            delete curr;
-            return leftMost;
+                       
+            Node<T>*leftMost=getLeftMost(curr->right);
+            
+            
+            
+            curr->key=leftMost->key;
+            curr->right=eraseHelper(curr->right,leftMost->key.value());
+            if(curr->right->color==doubleBlack) curr=eraseFixup(curr);//TODO delete fixup:
+            
+           
             return curr;
+
             
         }
 
@@ -346,109 +331,106 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
     }
 
     if(toErase<curr->key.value()){ 
-        curr->left= eraseHelper(curr->left,toErase);
-        if(curr->left->color==doubleBlack){
-            Node<T>*sibling=curr->right;
-            if(sibling->color==black && sibling->right->color==red){
-                curr->right=sibling->left;
-                sibling->left=curr;
-
-                curr=sibling;
-
-                curr->left->left->color=black;
-                if(curr->left->color==black){
-                    curr->right->color=black;
-                }else{//curr->left->color==red
-                    curr->left->color=black;
-                    curr->right->color=black;
-                    curr->color=red;
-                }
-                
-            }else if(sibling->color==black && sibling->left->color==red){
-                Node<T>*r=sibling->left;
-                curr->right=r->left;
-                r->left=curr;
-
-                sibling->left=r->right;
-                r->right=sibling;
-
-                curr=r;
-                curr->color=black;
-                curr->left->left->color=black;
-            }else if(sibling->color==red){
-                curr->right=sibling->left;
-                sibling->left=curr;
-                curr=sibling;
-                curr->color=black;
-                curr->left->left->color=black;
-                curr->left->right->color=red;
-            }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
-                sibling->color=red;
-                curr->left->color=black;
-                if(curr->color==black) curr->color=doubleBlack;
-                else                   curr->color=black;
-            }
-        }
+        curr->left=eraseHelper(curr->left,toErase);
+        curr=eraseFixup(curr);
         return curr;
     }
     else{
         curr->right=eraseHelper(curr->right,toErase);
-        if(curr->right->color==doubleBlack){
-            Node<T>*sibling=curr->left;
-            if(sibling->color==black && sibling->left->color==red){
-                curr->left=sibling->right;
-                sibling->right=curr;
-
-                curr=sibling;
-
-                curr->right->right->color=black;
-                if(curr->right->color==black){
-                    curr->left->color=black;
-                }else{//curr->right->color==red
-                    curr->right->color=black;
-                    curr->left->color=black;
-                    curr->color=red;
-                }
-            }else if(sibling->color==black && sibling->right->color==red){
-                 Node<T>*r=sibling->right;
-                curr->left=r->right;
-                r->right=curr;
-
-                sibling->right=r->left;
-                r->left=sibling;
-
-                curr=r;
-                curr->color=black;
-                curr->right->right->color=black;
-            }else if(sibling->color==red){
-                curr->left=sibling->right;
-                sibling->right=curr;
-                curr=sibling;
-                curr->color=black;
-                
-                curr->right->right->color=black;
-                curr->right->left->color=red;
-            }else if(sibling->color==black && sibling->left->color==black && sibling->right->color==black){
-                sibling->color=red;
-                curr->right->color=black;
-
-                if(curr->color==black) curr->color=doubleBlack;
-                else                    curr->color=black;
-            }
-        }
+        eraseFixup(curr);
         return curr;
     }
 }
 
-pair<Node<T>*,Node<T>*>takeLeftmost(Node<T>*curr){
-    if(!curr->left->key){
-        delete curr->left;
-        //delete curr->right;
-        return {curr,curr->right};
+Node<T>* eraseFixup(Node<T>*curr){
+    if(curr->left->color==doubleBlack){
+            Node<T>*sibling=curr->right;
+
+            if(sibling->color==black && sibling->left->color==black && sibling->right->color==black && curr->color==black ){//d2
+                sibling->color=red;
+                curr->left->color=black;
+                curr->color=doubleBlack;
+                return curr;
+            }
+             if(sibling->color==red){//d3
+                curr=curr->leftRotate();
+                curr->color=black;
+                curr->left->color=red; 
+                //curr->left->left->color=doubleBlack;
+                curr->left=eraseFixup(curr->left);
+                return curr;//maybe needs more work
+            }
+            if(sibling->color==black && sibling->left->color==black && sibling->right->color==black && curr->color==red ){//d4
+                sibling->color=red;
+                curr->left->color=black;
+                curr->color=black;
+                return curr;
+            }
+            if(sibling->color==black && sibling->left->color==red && sibling->right->color==black){//d5
+                curr->right=sibling->rightRotate();
+                curr->right->color=black;
+                curr->right->right->color=red;
+                sibling=curr->right;
+
+            }
+            if(sibling->color==black && sibling->right->color==red){//d6
+                curr=curr->leftRotate();
+                curr->left->left->color=black;
+                curr->color=curr->left->color;
+                curr->right->color=black;
+                curr->left->color=black;
+            }
+    }else if(curr->right->color==doubleBlack){
+            Node<T>*sibling=curr->left;
+
+            if(sibling->color==black && sibling->left->color==black && sibling->right->color==black && curr->color==black){//d2
+                sibling->color=red;
+                curr->right->color=black;
+
+                 curr->color=doubleBlack;  
+                 return curr;   
+            }
+
+            if(sibling->color==red){//d3
+                
+                curr=curr->rightRotate();
+                curr->color=black;
+                curr->left->color=red;
+                //curr->right->right->color=doubleBlack;
+                curr->right=eraseFixup(curr->right);
+                return curr;//maybe Needs more work
+            }
+            if(sibling->color==black && sibling->left->color==black && sibling->right->color==black && curr->color==red){//d4
+                
+                sibling->color=red;
+                curr->right->color=black;
+                  
+                curr->color=black;
+                return curr;
+            }
+            if(sibling->color==black && sibling->right->color==red && sibling->left->color==black){//d5
+                curr->left=sibling->leftRotate();
+                curr->left->color=black;
+                curr->left->left->color=red;
+                sibling=curr->left;
+            }
+            if(sibling->color==black && sibling->left->color==red){//d6
+                curr=curr->rightRotate();
+                curr->right->right->color=black;
+                curr->color=curr->right->color;
+                curr->left->color=black;
+                curr->right->color=black;
+            }
     }
-    pair<Node<T>*,Node<T>*> tmp=takeLeftmost(curr->left);
-    curr->left=tmp.second;
-    return {tmp.first,curr};
+        return curr;
+
+}
+
+Node<T>* getLeftMost(Node<T>*curr){
+    if(!curr->left->key)
+        return curr;
+    
+    return getLeftMost(curr->left);
 }
 pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     if(!curr->key){
@@ -505,7 +487,8 @@ void test_insert(int dim=100){
     BRTree<int> tmp=BRTree<int>();
     vector<bool>amRBTree;
 
-    for(int i=0;i<vektor.size();i++){
+    int n=vektor.size();
+    for(int i=0;i<n;i++){
         tmp.insert(vektor[i]);
         amRBTree.push_back(tmp.isRBTree());
         cerr<<"test "<< vektor[i]<<":"<<amRBTree.back()<<endl;
@@ -529,17 +512,17 @@ void test_erase(int dim,int toDelete){
     skup.exportToFile("graph_before_delete");
     skup.erase(toDelete);
     skup.exportToFile("skup_after_delete"+to_string(toDelete));
-    cerr<<"to delete : "<<toDelete<< " " << skup.isRBTree()<<endl;
+    cerr<<"to delete : "<<toDelete<< "is brtree: " << skup.isRBTree()<<endl;
 
 
 
 }
 int main()
 {   
-    for(int i=0;i<32;i++)
-        test_erase(16,i+1);
-    //for(int i=0;i<15;i++)
-    //   test(i+1);
+    
+    int dim=16;
+    for(int i=0;i<dim;i++)
+       test_erase(dim,i+1);
 
    return 0;
 }
