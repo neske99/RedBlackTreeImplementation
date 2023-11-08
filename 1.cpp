@@ -7,6 +7,8 @@
 #include<algorithm>
 #include<numeric>
 #include<functional>
+#include<random>
+
 using namespace std;
 
 enum Color{red,black,doubleBlack};
@@ -374,7 +376,7 @@ Node<T>* eraseHelper(Node<T>* curr,T toErase){
     }
     else{
         curr->right=eraseHelper(curr->right,toErase);
-        eraseFixup(curr);
+        curr=eraseFixup(curr);
         return curr;
     }
 }
@@ -432,7 +434,7 @@ Node<T>* eraseFixup(Node<T>*curr){
                 
                 curr=curr->rightRotate();
                 curr->color=black;
-                curr->left->color=red;
+                curr->right->color=red;
                 //curr->right->right->color=doubleBlack;
                 curr->right=eraseFixup(curr->right);
                 return curr;//maybe Needs more work
@@ -518,10 +520,9 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     int size;
 };
 
-void test_insert(int dim=100){
+void test_insert(const vector<int>&vektori){
     vector<int>vektor={};
-    for(int i=0;i<dim;i++)
-        vektor.push_back(i+1);
+
     BRTree<int> tmp=BRTree<int>();
     vector<bool>amRBTree;
 
@@ -529,77 +530,70 @@ void test_insert(int dim=100){
     for(int i=0;i<n;i++){
         tmp.insert(vektor[i]);
         amRBTree.push_back(tmp.isRBTree());
-        cerr<<"test "<< vektor[i]<<":"<<amRBTree.back()<<endl;
+        //cerr<<"test "<< vektor[i]<<":"<<amRBTree.back()<<endl;
         //tmp.exportToFile("graph"+to_string(i));
     }
-    cerr<<"insert_test passed: "<<accumulate(amRBTree.begin(),amRBTree.end(),true,[](bool x,bool y){return x && y;})<<endl;
+    if(!accumulate(amRBTree.begin(),amRBTree.end(),true,[](bool x,bool y){return x && y;}))
+        cerr<<"Some test failed"<<endl;
     
     
     
     return;
-    //BRTree<int> skup=BRTree<int>(vektor);
-    //skup.erase(toDelete);
-    //cerr<<"Delete try " <<toDelete<<" :"<<skup.isRBTree()<<endl;
-    //skup.exportToFile("graph"+to_string(toDelete));    
 }
-bool test_erase(int dim,int toDelete){
+bool test_erase(const vector<int>&vektor,int toDelete){
     BRTree<int>skup;
 
-    for(int i=0;i<dim;i++)
-        skup.insert(i+1);
-    skup.exportToFile("graph_before_delete");
+    for(int i=0;i<vektor.size();i++)
+        skup.insert(vektor[i]);
+    skup.exportToFile("before");
     skup.erase(toDelete);
-    skup.exportToFile("skup_after_delete"+to_string(toDelete));
-    //cerr<<"to delete : "<<toDelete<< "is brtree: " << skup.isRBTree()<<endl;
+    skup.exportToFile("after");
     return skup.isRBTree();
 
 
 }
 void multiple_erase_test(int dim){
+    vector<int>vektor;
     vector<bool>tests;
-    for(int i=0;i<dim;i++)
-       tests.push_back(test_erase(dim,i+1));
-    cout<<"ALL DELETION TESTS PASSED=="<<accumulate(tests.begin(),tests.end(),true,[](bool x,bool y){return x && y;})<<endl;
+    for(int i=0;i<dim;i++){
+        vektor.push_back(i+1);
+    }
+    for(int i=0;i<dim;i++) {
+        auto rng=default_random_engine {};
+        shuffle(vektor.begin(),vektor.end(),rng);
+        tests.push_back(test_erase(vektor, i + 1));
+        if(!tests.back()){
+            cout<<"VEKTOR INSERTION ORDER"  <<endl;
+            for(int j=0;j<vektor.size();j++){
+                cout<<vektor[j]<<"  ";
+            }
+            cout<<endl;
+            cerr<<"toDelete: "<<i+1<<endl;
+            break;
+        }
+    }
+       cout<<"ALL DELETION TESTS PASSED=="<<accumulate(tests.begin(),tests.end(),true,[](bool x,bool y){return x && y;})<<endl;
 }
 int main()
-{   
-    
-    //int dim=16;
-    //multiple_erase_test(dim);
-    int i=0;
-    string s;
-    BRTree<int>skup=BRTree<int>();
-    skup.exportToFile("GraphInitial");
-    skup.insert(2);
-    skup.insert(5);
-    skup.insert(3);
-    skup.exportToFile("253");
+{
+    int dim=1000;
+    vector<int>vektori={};
+    for(int i=0;i<dim;i++)
+        vektori.push_back(i+1);
+    auto rng=default_random_engine {};
+
+    multiple_erase_test(dim);
 
     return 0;
-    while(true){
-        cout<<"action "<< i+1<<":";
-        cout.flush();
-        cin>>s;
-        if(s[0]=='i'){//insert
-            cin >>s;
-            skup.insert(stoi(s));
-        }else if(s[0]=='e'){//erase
-            cin>>s;
-            skup.erase(stoi(s));
-        }else if(s[0]=='q'){
-            cerr<<"leaving program bye!"<<endl;
-            break;
-        }else if(s[0]=='s'){
-            cout<<"Size : "<<skup.getSize()<<endl;
-        }else{
-            cerr<<"unknown comand!"<<endl;
-            continue;
-        }
-        
-        
-        i++;
-        skup.exportToFile("Graph"+to_string(i));
-    }
+
+
+/*
+    vector<int>vektori={6,20,16,15,7,18,1,2,14,3,21,8,4,10,12,17,19,11,9,13,5 };
+    BRTree<int>skup=BRTree<int>(vektori);
+    skup.exportToFile("before");
+    skup.erase(15);
+    skup.exportToFile("after");
+*/
 
 
 
