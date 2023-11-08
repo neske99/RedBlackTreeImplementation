@@ -6,6 +6,7 @@
 #include<fstream>
 #include<algorithm>
 #include<numeric>
+#include<functional>
 using namespace std;
 
 enum Color{red,black,doubleBlack};
@@ -28,6 +29,15 @@ public:
     {
         this->key={};
     }
+    void recursiveDeleteChildren(){
+        if(this->key){
+            this->left->recursiveDeleteChildren();
+            this->right->recursiveDeleteChildren();
+        }
+        delete this->left;
+        delete this->right;
+    }
+    
 
     bool find(T toFind){
         if(!this->key) return false;
@@ -128,13 +138,18 @@ public:
     void exportToFile(string filename="graph"){
         ofstream f;
         int i=0;
-        f.open(filename+".dot");
+        f.open("dots/"+filename+".dot");
         f << "digraph{\n"; 
         
         exportNode(f,this,i);
 
         f<< "}\n";
         f.close();
+    }
+    int calcSize(Node<T>*curr){
+        if(!curr->key) return 0;        
+        return 1+calcSize(curr->left)+calcSize(curr->right);
+
     }
 
 };
@@ -212,9 +227,12 @@ public:
     BRTree(){
         root=new Node<T>();
         root->color=black;
+        size=0;
     }
     BRTree(Node<T>*root){
         this->root=root;
+        size=root->calcSize(root);
+
     }
     BRTree(const vector<T>&vec){
         this->root=new Node<T>();
@@ -222,22 +240,33 @@ public:
         for(int i =0;i<n;i++)
             this->insert(vec[i]);
     }
+    ~BRTree(){
+        this->root->recursiveDeleteChildren();
+        delete this->root;
+    }
+    int getSize() const{
+        return size;
+    }
 
-    bool find(T toFind){
+    bool find(T toFind)const{
         return root->find(toFind);
     }
     void insert(T toInsert){
         if(!root->find(toInsert)){
+            size++;
             root=insertHelper(root,toInsert).second;
             root->color=black;
         }    
     }
-    bool operator==(const BRTree&other){
+    bool operator==(const BRTree&other)const{
         return (*root)==(*other.root);
     }
     void erase(T toErase){
-        if(find(toErase)) root=eraseHelper(root,toErase);
-       
+        if(find(toErase)){
+            root=eraseHelper(root,toErase);
+            
+            --size;
+        }
         root->color=black;
        
     }
@@ -478,6 +507,7 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     }
 }
     Node<T>*root;
+    int size;
 };
 
 void test_insert(int dim=100){
@@ -504,7 +534,7 @@ void test_insert(int dim=100){
     //cerr<<"Delete try " <<toDelete<<" :"<<skup.isRBTree()<<endl;
     //skup.exportToFile("graph"+to_string(toDelete));    
 }
-void test_erase(int dim,int toDelete){
+bool test_erase(int dim,int toDelete){
     BRTree<int>skup;
 
     for(int i=0;i<dim;i++)
@@ -512,17 +542,53 @@ void test_erase(int dim,int toDelete){
     skup.exportToFile("graph_before_delete");
     skup.erase(toDelete);
     skup.exportToFile("skup_after_delete"+to_string(toDelete));
-    cerr<<"to delete : "<<toDelete<< "is brtree: " << skup.isRBTree()<<endl;
+    //cerr<<"to delete : "<<toDelete<< "is brtree: " << skup.isRBTree()<<endl;
+    return skup.isRBTree();
 
 
-
+}
+void multiple_erase_test(int dim){
+    vector<bool>tests;
+    for(int i=0;i<dim;i++)
+       tests.push_back(test_erase(dim,i+1));
+    cout<<"ALL DELETION TESTS PASSED=="<<accumulate(tests.begin(),tests.end(),true,[](bool x,bool y){return x && y;})<<endl;
 }
 int main()
 {   
     
-    int dim=16;
-    for(int i=0;i<dim;i++)
-       test_erase(dim,i+1);
+    //int dim=16;
+    //multiple_erase_test(dim);
+    int i=0;
+    string s;
+    BRTree<int>skup=BRTree<int>();
+    skup.exportToFile("GraphInitial");
+    while(true){
+        cout<<"action "<< i+1<<":";
+        cout.flush();
+        cin>>s;
+        if(s[0]=='i'){//insert
+            cin >>s;
+            skup.insert(stoi(s));
+        }else if(s[0]=='e'){//erase
+            cin>>s;
+            skup.erase(stoi(s));
+        }else if(s[0]=='q'){
+            cerr<<"leaving program bye!"<<endl;
+            break;
+        }else if(s[0]=='s'){
+            cout<<"Size : "<<skup.getSize()<<endl;
+        }else{
+            cerr<<"unknown comand!"<<endl;
+            continue;
+        }
+        
+        
+        i++;
+        skup.exportToFile("Graph"+to_string(i));
+    }
+
+
+
 
    return 0;
 }

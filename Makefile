@@ -2,10 +2,10 @@ run:1.cpp
 	g++ -o $@ -g -Wall -Wextra $<
 
 clean:
-	rm -f *.dot run *.pdf
+	rm -f dots/*.dot run pdfs/dots/*.pdf
 
 topdf:
-	for number in *.dot ; do \
-        dot -Tpdf $$number>$$number.pdf ; \
+	for number in dots/*.dot ; do \
+        dot -Tpdf $$number> pdfs/$$number.pdf ; \
     done
 	
