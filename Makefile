@@ -1,11 +1,20 @@
-run:1.cpp
-	g++ -o $@ -g -Wall -Wextra $<
+run:src/test.cpp lib/RBTree.cpp
+	g++ -o $@ -g -Wall -Wextra $^
+
+.PHONY:clean topdf cleanDotFiles exec
 
 clean:
-	rm -f dots/*.dot pdfs/dots/*.pdf
+	rm -f dots/*.dot pdfs/dots/*.pdf run
+
+cleanDotFiles:
+	rm -f dots/*.dot
 
 topdf:
-	for number in dots/*.dot ; do \
-        dot -Tpdf $$number> pdfs/$$number.pdf ; \
-    done
-	
+	for f in dots/*.dot; do \
+		dot -Tpdf $$f >pdfs/$$f.pdf; \
+	done
+
+exec:run
+	./run
+	make topdf
+	make cleanDotFiles

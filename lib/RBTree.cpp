@@ -232,25 +232,25 @@ public:
 };
 
 template<typename T>
-class BRTree{
+class RBTree{
 public:
-    BRTree(){
+    RBTree(){
         root=new Node<T>();
         root->color=black;
         size=0;
     }
-    BRTree(Node<T>*root){
+    RBTree(Node<T>*root){
         this->root=root;
         size=root->calcSize(root);
 
     }
-    BRTree(const vector<T>&vec){
+    RBTree(const vector<T>&vec){
         this->root=new Node<T>();
         int n=vec.size();
         for(int i =0;i<n;i++)
             this->insert(vec[i]);
     }
-    ~BRTree(){
+    ~RBTree(){
         this->root->recursiveDeleteChildren();
         delete this->root;
     }
@@ -266,7 +266,7 @@ public:
         root=insertHelper(root,toInsert).second;
         root->color=black;
     }
-    bool operator==(const BRTree&other)const{
+    bool operator==(const RBTree&other)const{
         return (*root)==(*other.root);
     }
     void erase(T toErase){
@@ -525,9 +525,9 @@ pair<Family<T>,Node<T>*> insertHelper(Node<T>*curr,T toInsert){
     int size;
 };
 
-
+/*
 bool test_erase(const vector<int>&vektor,int toDelete){
-    BRTree<int>skup;
+    RBTree<int>skup;
 
     for(int i=0;i<vektor.size();i++)
         skup.insert(vektor[i]);
@@ -561,7 +561,7 @@ void multiple_erase_test(int dim){
        cout<<"ALL DELETION TESTS PASSED=="<<accumulate(tests.begin(),tests.end(),true,[](bool x,bool y){return x && y;})<<endl;
 }
 void test_insert(const vector<int>&vektor){
-    BRTree<int>skup;
+    RBTree<int>skup;
     int n=vektor.size();
     for(int i=0;i<n;i++){
         skup.insert(vektor[i]);
@@ -576,26 +576,14 @@ void test(){
     shuffle(vektor.begin(),vektor.end(),rng);
     test_insert(vektor);
 }
+
 int main()
 {
-    time_t start, end;
-
-    /* You can call it like this : start = time(NULL);
-    in both the way start contain total time in seconds
-    since the Epoch. */
-    time(&start);
-
-    // unsync the I/O of C and C++.
-    //ios_base::sync_with_stdio(false);
-
-    test();
-    // Recording end time.
-    time(&end);
-
-    // Calculating total time taken by the program.
-    double time_taken = double(end - start);
-    cout << "Time taken by program is : " << fixed
-         << time_taken << setprecision(5);
-    cout << " sec " << endl;
+    RBTree<int>myTree;
+    myTree.insert(1);
+    myTree.insert(2);
+    myTree.insert(3);
+    myTree.exportToFile("123");
     return 0;
 }
+*/
