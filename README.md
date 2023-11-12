@@ -20,3 +20,7 @@
 5. za ostale ulaze program izbacuje undefined command
 6. posle svakog insertovanja i brisanje stablo se eksportuje u .dot fajl 
 7. posle ili tokom izvrsavanje main-a mozete pokrenuti make topdf da konvertujete .dot u .pdf fajlove
+
+# Inspiracije
+1. za brisanje: https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+2. za insertovanje: https://www.youtube.com/watch?v=5IBxA-bZZH8 i casovi vezbi
