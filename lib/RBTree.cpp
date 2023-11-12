@@ -69,7 +69,7 @@ public:
         auto levi=isRBTree(curr->left);
         auto desni=isRBTree(curr->right);
         if(levi.first && desni.first && levi.second==desni.second){
-            if(curr->color==red)
+            if(curr->color==red && curr->left->color==black && curr->right->color==black)
                 return {true,desni.second};
             else if(curr->color==black)
                 return {true,desni.second+1};
@@ -78,7 +78,7 @@ public:
         return {false,0};
     }
     bool isRBTree(){
-        return isRBTree(this).first;
+        return isRBTree(this).first && this->color==black;
     }
     Node<T>* leftRotate(){
         Node<T>*z=this;
