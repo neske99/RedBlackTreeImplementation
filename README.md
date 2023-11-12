@@ -11,3 +11,12 @@
 7. Make clean brise .dot fajlove .pdf fajlove(iz odgovarajucih direktorijuma), main i test file
 8. Make execMain kompajlira i izvrsava src/main.cpp (ako pravit makefile config u razvojnom okruzenju)
 9. Make execTest kompajlira i izvrsava src/test.cpp (ako pravit makefile config u razvojnom okruzenju)
+
+# main
+1. main skenira standardni ulaz 
+2. ako prva rec pocinje karakterom 'i' onda se druga rec konvertuje u int i insertu-je u stablo
+3. ako prva rec pocinje karakterom 'e' onda se druga rec konvertuje u int i brise iz stabla
+4. ako prva rec pocinje karakterom 'q' onda se izlazi iz petlje i program se zavrsava
+5. za ostale ulaze program izbacuje undefined command
+6. posle svakog insertovanja i brisanje stablo se eksportuje u .dot fajl 
+7. posle ili tokom izvrsavanje main-a mozete pokrenuti make topdf da konvertujete .dot u .pdf fajlove
