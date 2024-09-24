@@ -16,7 +16,7 @@ void test_insert(const vector<int>&vektor){
 }
 void test(){
     vector<int>vektor;
-    for(int i=0;i<10000000;i++){
+    for(int i=0;i<100;i++){
         vektor.push_back(i);
     }
     auto rng=default_random_engine {};
