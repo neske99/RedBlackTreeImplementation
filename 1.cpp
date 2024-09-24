@@ -192,17 +192,19 @@ public:
     } else { // uncle is black , parent is red
       // triangle case
       if (grandpa->left == father && father->right == him) {
-        grandpa->left = him;
-        father->right = him->left;
-        him->left = father;
+        // grandpa->left = him;
+        // father->right = him->left;
+        // him->left = father;
 
+        grandpa->left = grandpa->left->leftRotate();
         father = grandpa->left;
         him = grandpa->left->left;
         sibling = father->right;
       } else if (grandpa->right == father && father->left == him) {
-        grandpa->right = him;
-        father->left = him->right;
-        him->right = father;
+        // grandpa->right = him;
+        // father->left = him->right;
+        // him->right = father;
+        grandpa->right = grandpa->right->rightRotate();
 
         father = grandpa->right;
         him = grandpa->right->right;
@@ -210,23 +212,28 @@ public:
       }
       // line case
       if (grandpa->right == father && father->right == him) {
-        grandpa->right = sibling;
-        father->left = grandpa;
-        grandpa->color = Color::red;
-        father->color = Color::black;
+        // grandpa->right = sibling;
+        // father->left = grandpa;
+        // grandpa->color = Color::red;
+        // father->color = Color::black;
+        grandpa = grandpa->leftRotate();
+        grandpa->color = Color::black;
+        grandpa->left->color = Color::red;
 
-        grandpa = father;
+        // grandpa = father;
         InsertionFamily newFam;
         newFam.status = Status::succes;
         return newFam;
 
       } else if (grandpa->left == father && father->left == him) {
-        grandpa->left = sibling;
-        father->right = grandpa;
-        grandpa->color = Color::red;
-        father->color = Color::black;
-
-        grandpa = father;
+        // grandpa->left = sibling;
+        // father->right = grandpa;
+        // grandpa->color = Color::red;
+        // father->color = Color::black;
+        grandpa = grandpa->rightRotate();
+        grandpa->color = Color::black;
+        grandpa->right->color = Color::red;
+        // grandpa = father;
         InsertionFamily<T> newFam;
         newFam.status = Status::succes;
         return newFam;
@@ -512,7 +519,7 @@ private:
         InsertionFamily newFam = fam.fixUp();
         return {newFam, fam.grandpa};
 
-      } else {//if(fam.status == him) { // child is him
+      } else { // if(fam.status == him) { // child is him
         fam.status = father;
         fam.father = curr;
         if (curr->color == Color::black) {
@@ -568,11 +575,15 @@ void test_insert(const vector<int> &vektor) {
   int n = vektor.size();
   for (int i = 0; i < n; i++) {
     skup.insert(vektor[i]);
+    if (!skup.isRBTree()) {
+      cout << "Baad" << endl;
+      break;
+    }
   }
 }
 void test() {
   vector<int> vektor;
-  for (int i = 0; i < 10000000; i++) {
+  for (int i = 0; i < 10000; i++) {
     vektor.push_back(i);
   }
   auto rng = default_random_engine{};
@@ -590,7 +601,8 @@ int main() {
   // unsync the I/O of C and C++.
   // ios_base::sync_with_stdio(false);
 
-  test();
+  for (int i = 0; i < 100; i++)
+    test();
   // Recording end time.
   time(&end);
 
