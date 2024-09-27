@@ -85,7 +85,7 @@ public:
     }
     return {false, 0};
   }
-  bool isRBTree() { return isRBTree(this).first; }
+  bool isRBTree() { return this->color == Color::black && isRBTree(this).first; }
   Node<T> *leftRotate() {
     Node<T> *z = this;
     Node<T> *y = z->right;
@@ -192,18 +192,12 @@ public:
     } else { // uncle is black , parent is red
       // triangle case
       if (grandpa->left == father && father->right == him) {
-        // grandpa->left = him;
-        // father->right = him->left;
-        // him->left = father;
 
         grandpa->left = grandpa->left->leftRotate();
         father = grandpa->left;
         him = grandpa->left->left;
         sibling = father->right;
       } else if (grandpa->right == father && father->left == him) {
-        // grandpa->right = him;
-        // father->left = him->right;
-        // him->right = father;
         grandpa->right = grandpa->right->rightRotate();
 
         father = grandpa->right;
@@ -212,28 +206,19 @@ public:
       }
       // line case
       if (grandpa->right == father && father->right == him) {
-        // grandpa->right = sibling;
-        // father->left = grandpa;
-        // grandpa->color = Color::red;
-        // father->color = Color::black;
         grandpa = grandpa->leftRotate();
         grandpa->color = Color::black;
         grandpa->left->color = Color::red;
 
-        // grandpa = father;
         InsertionFamily newFam;
         newFam.status = Status::succes;
         return newFam;
 
       } else if (grandpa->left == father && father->left == him) {
-        // grandpa->left = sibling;
-        // father->right = grandpa;
-        // grandpa->color = Color::red;
-        // father->color = Color::black;
         grandpa = grandpa->rightRotate();
         grandpa->color = Color::black;
         grandpa->right->color = Color::red;
-        // grandpa = father;
+
         InsertionFamily<T> newFam;
         newFam.status = Status::succes;
         return newFam;
@@ -279,7 +264,7 @@ public:
 
     root->color = Color::black;
   }
-
+//TODO obsolete
   void bfsPrint() {
     queue<Node<T> *> nodeQueue;
     nodeQueue.push(root);
@@ -313,7 +298,7 @@ public:
 
 private:
   Node<T> *eraseHelper(Node<T> *curr, T toErase) {
-    if (!curr->key) {
+    if (!curr->key) {//Nothing to erase size doesent change
 
       return curr;
     }
@@ -329,6 +314,7 @@ private:
         delete curr->left;
         delete curr->right;
         delete curr;
+        size--;
         return toReturn;
       } else if (!curr->left->key) { // has only red right child which is red
                                      // and has null children
@@ -339,6 +325,7 @@ private:
 
         delete left;
         delete curr;
+        size--;
         return right;
       } else if (!curr->right
                       ->key) { // has only red left child with null children
@@ -349,6 +336,7 @@ private:
 
         delete right;
         delete curr;
+        size--;
         return left;
 
       } else { // has both children
@@ -601,8 +589,9 @@ int main() {
   // unsync the I/O of C and C++.
   // ios_base::sync_with_stdio(false);
 
-  for (int i = 0; i < 100; i++)
-    test();
+  //for (int i = 0; i < 100; i++)
+   // test();
+  multiple_erase_test(100);
   // Recording end time.
   time(&end);
 
