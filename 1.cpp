@@ -103,7 +103,7 @@ public:
     return y;
   }
   // TODO what if curr is null break recursion
-  void exportNode(ostream &f, Node<T> *curr, int index) {
+  void exportNode(ofstream &f, Node<T> *curr, int index) {
     if (!curr->key) {
       string col = "black";
 
@@ -115,9 +115,11 @@ public:
     }
     string nodeName = to_string(curr->key.value());
 
-    string lName = to_string(curr->left->key.value());
+    //bad access
+    //string lName = to_string(curr->left->key.value());
 
-    string rName = to_string(curr->right->key.value());
+    //bad access
+    //string rName = to_string(curr->right->key.value());
 
     int leftIndex = 2 * index + 1;
     int rightIndex = 2 * index + 2;
@@ -143,12 +145,14 @@ public:
   void exportToFile(string filename = "graph") {
     ofstream f;
     int i = 0;
-    f.open("dots/" + filename + ".dot");
+    f.open("dots/" + filename + ".dot",std::ios::out);
+
     f << "digraph{\n";
 
     exportNode(f, this, i);
 
     f << "}\n";
+    f.flush();
     f.close();
   }
   int calcSize(Node<T> *curr) {
@@ -578,12 +582,21 @@ void test() {
   shuffle(vektor.begin(), vektor.end(), rng);
   test_insert(vektor);
 }
-int main() {
+int main(){
+  
+  RBTree<int>skup= RBTree<int>();
+  skup.insert(1);
+  skup.insert(2);
+  skup.exportToFile("test");
+
+  return 0;
+}
+/*int main() {
   time_t start, end;
 
   /* You can call it like this : start = time(NULL);
   in both the way start contain total time in seconds
-  since the Epoch. */
+  since the Epoch. 
   time(&start);
 
   // unsync the I/O of C and C++.
@@ -591,7 +604,7 @@ int main() {
 
   //for (int i = 0; i < 100; i++)
    // test();
-  multiple_erase_test(100);
+  multiple_erase_test(10);
   // Recording end time.
   time(&end);
 
@@ -601,4 +614,4 @@ int main() {
        << setprecision(5);
   cout << " sec " << endl;
   return 0;
-}
+}*/
