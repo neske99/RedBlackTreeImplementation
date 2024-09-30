@@ -1,11 +1,9 @@
 #include <algorithm>
 #include <bits/stdc++.h>
 #include <fstream>
-#include <functional>
 #include <iostream>
 #include <numeric>
 #include <optional>
-#include <queue>
 #include <random>
 #include <string>
 #include <vector>
@@ -64,7 +62,7 @@ public:
              (*(this->right)) == (*(other.right));
     return false;
   }
-  pair<bool, int> isRBTree(Node<T> *curr) {
+  pair<bool, int> isRBTreeExcludingRootRule(Node<T> *curr) {
     if (curr->color == Color::doubleBlack)
       return {false, 0};
 
@@ -74,8 +72,8 @@ public:
       return {true, 1};
     }
 
-    auto levi = isRBTree(curr->left);
-    auto desni = isRBTree(curr->right);
+    auto levi = isRBTreeExcludingRootRule(curr->left);
+    auto desni = isRBTreeExcludingRootRule(curr->right);
     if (levi.first && desni.first && levi.second == desni.second) {
       if (curr->color == Color::red && curr->left->color != Color::red &&
           curr->right->color != Color::red)
@@ -85,7 +83,9 @@ public:
     }
     return {false, 0};
   }
-  bool isRBTree() { return this->color == Color::black && isRBTree(this).first; }
+  bool isRBTree() {
+    return this->color == Color::black && isRBTreeExcludingRootRule(this).first;
+  }
   Node<T> *leftRotate() {
     Node<T> *z = this;
     Node<T> *y = z->right;
@@ -115,12 +115,6 @@ public:
     }
     string nodeName = to_string(curr->key.value());
 
-    //bad access
-    //string lName = to_string(curr->left->key.value());
-
-    //bad access
-    //string rName = to_string(curr->right->key.value());
-
     int leftIndex = 2 * index + 1;
     int rightIndex = 2 * index + 2;
 
@@ -145,7 +139,7 @@ public:
   void exportToFile(string filename = "graph") {
     ofstream f;
     int i = 0;
-    f.open("dots/" + filename + ".dot",std::ios::out);
+    f.open("dots/" + filename + ".dot", std::ios::out);
 
     f << "digraph{\n";
 
@@ -155,6 +149,7 @@ public:
     f.flush();
     f.close();
   }
+
   int calcSize(Node<T> *curr) {
     if (!curr->key)
       return 0;
@@ -252,7 +247,6 @@ public:
     this->root->recursiveDeleteChildren();
     delete this->root;
   }
-  // TODO test is this valid
   int getSize() const { return size; }
 
   bool find(T toFind) const { return root->find(toFind); }
@@ -268,33 +262,6 @@ public:
 
     root->color = Color::black;
   }
-//TODO obsolete
-  void bfsPrint() {
-    queue<Node<T> *> nodeQueue;
-    nodeQueue.push(root);
-    while (!nodeQueue.empty()) {
-      int n = nodeQueue.size();
-      for (int i = 0; i < n; i++) {
-        Node<T> *curr = nodeQueue.front();
-        nodeQueue.pop();
-        string toPrint = "";
-        if (curr->color == Color::red)
-          toPrint += "R";
-        else if (curr->color == Color::black)
-          toPrint += "B";
-        else
-          toPrint += "DB";
-        if (curr->key) {
-          toPrint += to_string(curr->key.value());
-          nodeQueue.push(curr->left);
-          nodeQueue.push(curr->right);
-        } else
-          toPrint += "NULL";
-        cout << toPrint << "    ";
-      }
-      cout << endl;
-    }
-  }
 
   void exportToFile(string filename = "graph") { root->exportToFile(filename); }
 
@@ -302,7 +269,7 @@ public:
 
 private:
   Node<T> *eraseHelper(Node<T> *curr, T toErase) {
-    if (!curr->key) {//Nothing to erase size doesent change
+    if (!curr->key) { // Nothing to erase size doesent change
 
       return curr;
     }
@@ -313,7 +280,7 @@ private:
         if (curr->color == Color::red)
           ; // do nothing
         else
-          toReturn->color = Color::doubleBlack; // do something TODO
+          toReturn->color = Color::doubleBlack;
 
         delete curr->left;
         delete curr->right;
@@ -431,7 +398,7 @@ private:
         curr = curr->rightRotate();
         curr->color = Color::black;
         curr->right->color = Color::red;
-        // curr->right->right->color=Color::doubleBlack;
+
         curr->right = eraseFixup(curr->right);
         return curr; // maybe Needs more work
       }
@@ -582,28 +549,20 @@ void test() {
   shuffle(vektor.begin(), vektor.end(), rng);
   test_insert(vektor);
 }
-int main(){
-  
-  RBTree<int>skup= RBTree<int>();
-  skup.insert(1);
-  skup.insert(2);
-  skup.exportToFile("test");
 
-  return 0;
-}
-/*int main() {
+int main() {
   time_t start, end;
 
   /* You can call it like this : start = time(NULL);
   in both the way start contain total time in seconds
-  since the Epoch. 
+  since the Epoch. */
   time(&start);
 
   // unsync the I/O of C and C++.
   // ios_base::sync_with_stdio(false);
 
-  //for (int i = 0; i < 100; i++)
-   // test();
+  // for (int i = 0; i < 100; i++)
+  //  test();
   multiple_erase_test(10);
   // Recording end time.
   time(&end);
@@ -614,4 +573,4 @@ int main(){
        << setprecision(5);
   cout << " sec " << endl;
   return 0;
-}*/
+}
